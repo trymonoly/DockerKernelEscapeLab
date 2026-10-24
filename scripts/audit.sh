@@ -5,6 +5,10 @@ section() {
     printf '\n== %s ==\n' "$1"
 }
 
+section "CVE scope"
+printf 'CVE_ID=%s\n' "${CVE_ID:-UNSET}"
+printf 'AUDIT_FOCUS=%s\n' "${AUDIT_FOCUS:-general}"
+
 section "Identity and kernel"
 printf 'UID=%s\n' "$(id -u)"
 printf 'GID=%s\n' "$(id -g)"
