@@ -1,0 +1,79 @@
+x-audit-common: &audit-common
+  build:
+    context: .
+    dockerfile: Dockerfile
+  image: docker-kernel-escape-lab:local
+  user: "1000:1000"
+  read_only: true
+  tmpfs:
+    - /tmp:rw,noexec,nosuid,size=16m
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+  networks:
+    - audit-net
+  command: ["/opt/lab/scripts/audit.sh"]
+
+services:
+  audit:
+    <<: *audit-common
+    labels:
+      io.github.dockerkernelescapelab.mode: audit-only
+      io.github.dockerkernelescapelab.scope: general,runtime,filesystem,copy-fail
+
+  userns-audit:
+    <<: *audit-common
+    profiles: ["userns"]
+    labels:
+      io.github.dockerkernelescapelab.mode: audit-only
+      io.github.dockerkernelescapelab.cves: CVE-2022-0185,CVE-2022-0492,CVE-2023-0386
+
+  netfilter-audit:
+    <<: *audit-common
+    profiles: ["netfilter"]
+    cap_add:
+      - NET_ADMIN
+    labels:
+      io.github.dockerkernelescapelab.mode: audit-only
+      io.github.dockerkernelescapelab.cves: CVE-2021-22555,CVE-2022-25636,CVE-2023-32233,CVE-2024-1086
+
+  af-packet-audit:
+    <<: *audit-common
+    profiles: ["af-packet"]
+    cap_add:
+      - NET_RAW
+    labels:
+      io.github.dockerkernelescapelab.mode: audit-only
+      io.github.dockerkernelescapelab.cves: CVE-2020-14386
+
+  copy-fail-audit:
+    <<: *audit-common
+    profiles: ["copy-fail"]
+    labels:
+      io.github.dockerkernelescapelab.mode: audit-only
+      io.github.dockerkernelescapelab.cves: CVE-2026-31431
+
+  shim-audit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: docker-kernel-escape-lab:local
+    profiles: ["host-network"]
+    network_mode: host
+    user: "1000:1000"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    command: ["/opt/lab/scripts/audit.sh"]
+    labels:
+      io.github.dockerkernelescapelab.mode: audit-only
+      io.github.dockerkernelescapelab.cves: CVE-2020-15257
+
+networks:
+  audit-net:
+    internal: true
