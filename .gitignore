@@ -1,4 +1,5 @@
-__pycache__/
-*.py[cod]
+.vagrant/
+work/
 audit-output/
+*.box
 *.log
